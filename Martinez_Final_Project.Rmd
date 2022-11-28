@@ -1,0 +1,65 @@
+---
+title: "Final Project"
+author: "Laura M Martinez"
+date: "2022-12-14"
+output: pdf_document
+geometry: margin=2.54cm
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+#install.packages('formatR')
+library('formatR')
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60), tidy=TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r import packages}
+setwd("/Users/laura/Documents/Martinez_ENV872_EDA_FinalProject")
+getwd()
+
+#install.packages(tidyverse)
+library(tidyverse)
+#install.packages(sf)
+library(sf)
+#install.packages(mapview)
+library(mapview)
+#install.packages()
+#library()
+#install.packages("tidycensus")
+#library(tidycensus)
+```
+
+
+```{r import data sets}
+Haz_Waste_Sites <- read.csv("./Data/Hazardous_Waste_Sites.csv",
+                         stringsAsFactors = TRUE)
+NC_Counties <- st_read('./Data/NC_Counties/counties.shp')
+
+```
+
+```{r plot Hazardous Waste Facilities}
+HWS.sf <- Haz_Waste_Sites %>% 
+  st_as_sf(coords = c('LONG','LAT'),
+           crs=4269)
+
+mapview(HWS.sf)
+
+ggplot()+
+  geom_sf(data = NC_Counties, fill = 'cadetblue', color='cadetblue', alpha = 0.5) + 
+  geom_sf(data = HWS.sf,fill ='navy', cex = 1.5, alpha = 0.75) +
+ labs(title = "Hazardous Waste Sites in NC",
+       subtitle = "by: Laura Martinez") +
+  theme(plot.title=element_text(hjust=0.5),
+        plot.subtitle=element_text(hjust=0.5))
+
+```
+```{r data wrangling}
+
+```
