@@ -45,7 +45,6 @@ mytheme <- theme_classic() +
 theme_set(mytheme)
 ```
 
-
 ```{r import data sets}
 Haz_Waste_Sites <- read.csv("./Data/Hazardous_Waste_Sites.csv",
                          stringsAsFactors = TRUE)
@@ -55,9 +54,83 @@ NC_Counties <- st_read('./Data/NC_Counties/counties.shp')
 #Read in file outside of code
 EJSCREEN_shp <- st_read('./Data/EJSCREEN_Full_shapefile/EJSCREEN_Full_with_AS_CNMI_GU_VI_Tracts.shp')
 
+NC_PM25 <- read.csv("./Data/EPA_NC_PM25.csv",
+                         stringsAsFactors = TRUE)
+
+NC_PM10 <- read.csv("./Data/EPA_NC_PM10.csv",
+                         stringsAsFactors = TRUE)
+
+NC_CO <- read.csv("./Data/EPA_NC_CO.csv",
+                         stringsAsFactors = TRUE)
+
+NC_NO2 <- read.csv("./Data/EPA_NC_NO2.csv",
+                         stringsAsFactors = TRUE)
+
+NC_SO2 <- read.csv("./Data/EPA_NC_SO2.csv",
+                         stringsAsFactors = TRUE)
+
+NC_Ozone <- read.csv("./Data/EPA_NC_Ozone.csv",
+                         stringsAsFactors = TRUE)
+
+```
+
+``` {r Convert factors to date for NC air quality datasets}
+
+NC_PM25$Date <- as.Date(NC_PM25$Date, format = "%m/%d/%Y")
+
+NC_PM10$Date <- as.Date(NC_PM10$Date, format = "%m/%d/%Y")
+
+NC_CO$Date <- as.Date(NC_CO$Date, format = "%m/%d/%Y")
+
+NC_NO2$Date <- as.Date(NC_NO2$Date, format = "%m/%d/%Y")
+
+NC_SO2$Date <- as.Date(NC_SO2$Date, format = "%m/%d/%Y")
+
+NC_Ozone$Date <- as.Date(NC_Ozone$Date, format = "%m/%d/%Y")
+
+```
+
+```{r EPA air quality dataset wrangling into three df's}
+
+PM25_clean <- NC_PM25 %>% select(Date, Site.ID, Daily.Mean.PM2.5.Concentration)
+
+CO_clean <- NC_CO %>% select(Date, Site.ID, Daily.Max.8.hour.CO.Concentration) 
+
+NO2_clean <- NC_NO2 %>% select(Date, Site.ID, Daily.Max.1.hour.NO2.Concentration)
+
+#Combine datasets to PM10 by Site ID
+PM_combined <- merge(NC_PM10, PM25_clean, by=c("Site.ID","Date"))
+unique(PM_combined[c("Site.Name")])
+
+CO_and_Ozone <- merge(NC_Ozone, CO_clean, by=c("Site.ID","Date"))
+unique(CO_and_Ozone[c("Site.Name")])
+
+NO2_and_SO2 <- merge(NC_SO2, NO2_clean, by=c("Site.ID","Date"))
+unique(NO2_and_SO2[c("Site.Name")])
+```
+
+```{r Convert EPA air quality dataframe to sf}
+PM.sf <- PM_combined %>% 
+  st_as_sf(coords = c('SITE_LONGITUDE','SITE_LATITUDE'),
+           crs=4269)
+CO_and_Ozone.sf <- CO_and_Ozone %>% 
+  st_as_sf(coords = c('SITE_LONGITUDE','SITE_LATITUDE'),
+           crs=4269)
+
+NO2_and_SO2.sf <- NO2_and_SO2 %>% 
+  st_as_sf(coords = c('SITE_LONGITUDE','SITE_LATITUDE'),
+           crs=4269)
+
+mapview(PM.sf)
+
+mapview(CO_and_Ozone.sf)
+
+mapview(NO2_and_SO2.sf)
+
 ```
 
 ```{r plot Hazardous Waste Facilities}
+
 HWS.sf <- Haz_Waste_Sites %>% 
   st_as_sf(coords = c('LONG','LAT'),
            crs=4269)
@@ -75,7 +148,9 @@ ggplot()+
 ```
 
 ```{r buffer hazardous waste facilities}
-HWS_buffer <- st_buffer(HWS.sf, dist = 100)
+HWS_buffer <- st_buffer(HWS.sf, dist = 1000)
+
+HWS_buffer <- HWS.sf %>% st_buffer(1)
 
 ggplot()+
   geom_sf(data = HWS_buffer,fill ='orange', alpha = 0.9)
