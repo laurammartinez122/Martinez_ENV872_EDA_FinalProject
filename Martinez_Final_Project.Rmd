@@ -246,7 +246,8 @@ ggplot()+
 HWS_buffer <- st_buffer(HWS.sf, dist = 1000)
 
 ggplot()+
-  geom_sf(data = HWS_buffer, fill ='orange', alpha = 0.9)
+  geom_sf(data = HWS_buffer, fill ='orange', alpha = 0.9) +
+  geom_sf(data = AQ_buffer1, fill ='white')
 
 ```
 
@@ -254,31 +255,46 @@ ggplot()+
 EJScreen_NC_shp <-
   EJSCREEN_shp %>%
   filter(STATE_NAME == 'North Carolina') %>%
-  select(ID:CNTY_NAME, MINORPCT, LOWINCPCT, UNDER5PCT, OVER64PCT, PTSDF) %>%
-  group_by(CNTY_NAME) %>%
-  summarise(mean_MINORPCT = mean(MINORPCT), 
-            mean_LOWINCPCT = mean(LOWINCPCT), 
-            mean_UNDER5PCT = mean(UNDER5PCT), 
-            mean_OVER64PCT = mean(OVER64PCT),
-            mean_PTSDF = mean(PTSDF))
+  filter(CNTY_NAME == 'Durham'|CNTY_NAME == 'Forsyth'|
+            CNTY_NAME == 'Mecklenburg'|CNTY_NAME == 'Wake') %>%
+  select(ID:CNTY_NAME, MINORPCT, LOWINCPCT, UNDER5PCT, OVER64PCT, PTSDF)
+
+#Pull out 4 counties for analysis
+EJScreen_Durham <- EJScreen_NC_shp %>% filter(CNTY_NAME == 'Durham')
+EJScreen_Forsyth <- EJScreen_NC_shp %>% filter(CNTY_NAME == 'Forsyth')
+EJScreen_Mecklenburg <- EJScreen_NC_shp %>% filter(CNTY_NAME == 'Mecklenburg')
+EJScreen_Wake <- EJScreen_NC_shp %>% filter(CNTY_NAME == 'Wake')
 
 ```
 
-```{r EJScreen plot shapefile}
-Demographic1.plot <-
-  ggplot() +
-  geom_sf(data = EJScreen_NC_shp, aes(fill=mean_OVER64PCT)) + 
-  geom_sf(data = HWS.sf, fill ='azure', cex = 1.5, alpha = 0.75) +
-  scale_color_viridis(option= "magma", direction = -1)
-print(Demographic1.plot)
+```{r Conduct analysis for Armory Durham}
+#Durham 
+ggplot() +
+  geom_sf(data = EJScreen_Durham, aes(fill= MINORPCT)) +
+  geom_sf(data = AQ_buffer1, fill=NA, color ='white')
 
-Demographic1.plot <- 
-  geom_sf(data = EJScreen_NC_shp, aes(fill=mean_OVER64PCT)) + 
-  scale_color_viridis(option= "magma", direction = -1) +
-  geom_sf(data = HWS.sf, fill ='azure', cex = 1.5, alpha = 0.75) 
-Demographic1.plot
+ggplot() +
+  geom_sf(data = EJScreen_Durham, aes(fill= LOWINCPCT)) +
+  geom_sf(data = AQ_buffer1, fill=NA, color ='white')
+  
 ```
 
-```{r data wrangling}
+```{r Plot PM in Armory Durham}
+Armory_PM25.plot <-
+  ggplot(PM_combined, aes(x = Date, y = Daily.Mean.PM2.5.Concentration)) +
+  geom_line() +
+  geom_smooth(method = 'lm', se = FALSE, color = "Blue") +
+  xlab("Date") +
+  ylab("Concentration of PM2.5 (ppm)")
+print(Armory_PM25.plot)
 
+Armory_PM10.plot <-
+  ggplot(PM_combined, aes(x = Date, y = Daily.Mean.PM10.Concentration)) +
+  geom_line() +
+  geom_smooth(method = 'lm', se = FALSE, color = "Blue") +
+  xlab("Date") +
+  ylab("Concentration of PM10 (ppm)")
+print(Armory_PM10.plot)
 ```
+
+Note: There is a lot more room for further analysis for each site. For example, it is possible to plot all of the different values for demographic indicators for each of the four counties by using the same methods as above. I could also spatially analyze the plots for Date and Concentrations for Hattie Avenue, Garinger High School, and Millbrook School for CO, Ozone, NO2, and SO2 by following the same steps as above. 
