@@ -30,10 +30,15 @@ library(tidyverse)
 library(sf)
 #install.packages(mapview)
 library(mapview)
-#install.packages()
-#library()
-#install.packages("tidycensus")
-#library(tidycensus)
+#install.packages(dplyr)
+library(dplyr)
+#install.packages(viridis)
+library(viridis)
+
+mytheme <- theme_classic() +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "right")
+theme_set(mytheme)
 ```
 
 
@@ -60,6 +65,19 @@ ggplot()+
         plot.subtitle=element_text(hjust=0.5))
 
 ```
+
+```{r buffer hazardous waste facilities}
+HWS_buffer <- st_buffer(HWS.sf, dist = 100)
+
+ggplot()+
+  geom_sf(data = HWS_buffer,fill ='orange', alpha = 0.9)
+
+```
+
+```{r }
+
+```
+
 ```{r data wrangling}
 
 ```
