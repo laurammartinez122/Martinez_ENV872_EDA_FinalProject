@@ -28,8 +28,6 @@ getwd()
 library(tidyverse)
 #install.packages("sf")
 library(sf)
-#install.packages("mapview")
-library(mapview)
 #install.packages("dplyr")
 library(dplyr)
 #install.packages("viridis")
@@ -109,7 +107,7 @@ NO2_and_SO2 <- merge(NC_SO2, NO2_clean, by=c("Site.ID","Date"))
 unique(NO2_and_SO2[c("Site.Name")])
 ```
 
-```{r Convert EPA air quality dataframe to sf}
+```{r Convert EPA air quality dataframes to sf's}
 PM.sf <- PM_combined %>% 
   st_as_sf(coords = c('SITE_LONGITUDE','SITE_LATITUDE'),
            crs=4269)
@@ -121,11 +119,16 @@ NO2_and_SO2.sf <- NO2_and_SO2 %>%
   st_as_sf(coords = c('SITE_LONGITUDE','SITE_LATITUDE'),
            crs=4269)
 
-mapview(PM.sf)
-
-mapview(CO_and_Ozone.sf)
-
-mapview(NO2_and_SO2.sf)
+AQ_sites <- ggplot() +
+  geom_sf(data = NC_Counties, fill = 'lightsalmon', color='sienna4', alpha = 0.5) +
+  geom_sf(data = PM.sf, fill = 'black', color='black') + 
+  geom_sf(data = CO_and_Ozone.sf, fill = 'black', color='black') + 
+  geom_sf(data = NO2_and_SO2.sf, fill = 'black', color='black') +
+  labs(title = "Daily Air Quality Monitoring Stations in NC",
+       subtitle = "by: Laura Martinez") +
+  theme(plot.title=element_text(hjust=0.5),
+        plot.subtitle=element_text(hjust=0.5))
+AQ_sites
 
 ```
 
@@ -134,8 +137,6 @@ mapview(NO2_and_SO2.sf)
 HWS.sf <- Haz_Waste_Sites %>% 
   st_as_sf(coords = c('LONG','LAT'),
            crs=4269)
-
-mapview(HWS.sf)
 
 ggplot()+
   geom_sf(data = NC_Counties, fill = 'cadetblue', color='cadetblue', alpha = 0.5) + 
@@ -147,13 +148,59 @@ ggplot()+
 
 ```
 
+```{r Buffer AQ sites}
+AQ_buffer1 <- st_buffer(PM.sf, dist = 5000)
+
+AQ_buffer2 <- st_buffer(NO2_and_SO2.sf, dist = 5000)
+
+#plot buffers and sites 
+ggplot()+
+  geom_sf(data = NC_Counties, fill = 'lightsalmon', color='sienna4', alpha = 0.5) +
+  geom_sf(data = AQ_buffer1, fill ='white', alpha = 0.9) +
+  geom_sf(data = AQ_buffer2, fill ='white', alpha = 0.9) +
+  geom_sf(data = PM.sf, fill = 'black', color='black', cex=0.1) + 
+  geom_sf(data = CO_and_Ozone.sf, fill = 'black', color='black', cex= 0.1) + 
+  geom_sf(data = NO2_and_SO2.sf, fill = 'black', color='black', cex=0.1) +
+  labs(title = "Air Quality Sites & 5 Km Buffer",
+       subtitle = "by: Laura Martinez") +
+  theme(plot.title=element_text(hjust=0.5),
+        plot.subtitle=element_text(hjust=0.5))
+  
+```
+
+```{r buffer hazardous waste facilities}
+#How many HWS are within 5 Km of the four air quality sites?
+Armory_Buffer <- AQ_buffer1[2, ]
+Armory_intersection <- st_intersection(Armory_Buffer, HWS.sf)
+unique(Armory_intersection[c("FID")])
+
+Hattie_Buffer <- AQ_buffer2[2, ]
+Hattie_intersection <- st_intersection(Hattie_Buffer, HWS.sf)
+unique(Hattie_intersection[c("FID")])
+
+Garinger_Buffer <- AQ_buffer2[260, ]
+Garinger_intersection <- st_intersection(Garinger_Buffer, HWS.sf)
+unique(Garinger_intersection[c("FID")])
+
+Millbrook_Buffer <- AQ_buffer2[740, ]
+Millbrook_intersection <- st_intersection(Millbrook_Buffer, HWS.sf)
+unique(Millbrook_intersection[c("FID")])
+
+```
+
+```{r transform sites from NAD83 to WGS84}
+Armory <- st_transform(Armory_intersection, crs = 4269)
+Hattie <- st_transform(Hattie_intersection, crs = 4269)
+Garinger <- st_transform(Garinger_intersection, crs = 4269)
+Millbrook <- st_transform(Millbrook_intersection, crs = 4269)
+
+```
+
 ```{r buffer hazardous waste facilities}
 HWS_buffer <- st_buffer(HWS.sf, dist = 1000)
 
-HWS_buffer <- HWS.sf %>% st_buffer(1)
-
 ggplot()+
-  geom_sf(data = HWS_buffer,fill ='orange', alpha = 0.9)
+  geom_sf(data = HWS_buffer, fill ='orange', alpha = 0.9)
 
 ```
 
