@@ -196,6 +196,52 @@ Millbrook <- st_transform(Millbrook_intersection, crs = 4269)
 
 ```
 
+```{r Plot each air monitoring site}
+#isolate counties 
+Durham <- NC_Counties %>% filter(CO_NAME == "DURHAM")
+Forsyth <- NC_Counties %>% filter(CO_NAME == "FORSYTH")
+Mecklenburg <- NC_Counties %>% filter(CO_NAME == "MECKLENBURG")
+Wake <- NC_Counties %>% filter(CO_NAME == "WAKE")
+
+#isolate last three buffers
+Forsyth_buffer <- AQ_buffer2 %>% filter(Site.Name == "Hattie Avenue")
+Mecklenburg_buffer <- AQ_buffer2 %>% filter(Site.Name == "Garinger High School")
+Wake_buffer <- AQ_buffer2 %>% filter(Site.Name == "Millbrook School")
+
+#Armory Durham
+ggplot()+
+  geom_sf(data = Durham, fill ='cadetblue', alpha = 0.75) +
+  geom_sf(data = AQ_buffer1, fill ='white', alpha = 0.9) +
+  geom_sf(data = Armory, fill ='black', alpha = 0.5) +
+  labs(title = "HWS 5Km from Armory Durham in Durham County") +
+  theme(plot.title=element_text(hjust=0.5))
+
+#Hattie Avenue 
+ggplot()+
+  geom_sf(data = Forsyth, fill ='lightblue', alpha = 0.75) +
+  geom_sf(data = Forsyth_buffer, fill ='white', alpha = 0.9) +
+  geom_sf(data = Hattie, fill ='black', alpha = 0.5) +
+  labs(title = "HWS 5Km from Hattie Avenue in Forsyth County") +
+  theme(plot.title=element_text(hjust=0.5))
+
+#Garinger High School
+ggplot()+
+  geom_sf(data = Mecklenburg, fill ='yellowgreen', alpha = 0.75) +
+  geom_sf(data = Mecklenburg_buffer, fill ='white', alpha = 0.9) +
+  geom_sf(data = Garinger, fill ='black', alpha = 0.5) +
+  labs(title = "HWS 5Km from Garinger High School in Mecklenburg County") +
+  theme(plot.title=element_text(hjust=0.5))
+
+#Millbrook School
+ggplot()+
+  geom_sf(data = Wake, fill ='darkslateblue', alpha = 0.75) +
+  geom_sf(data = Wake_buffer, fill ='white', alpha = 0.9) +
+  geom_sf(data = Millbrook, fill ='black', alpha = 0.5) +
+  labs(title = "HWS 5Km from Millbrook School in Wake County") +
+  theme(plot.title=element_text(hjust=0.5))
+
+```
+
 ```{r buffer hazardous waste facilities}
 HWS_buffer <- st_buffer(HWS.sf, dist = 1000)
 
