@@ -88,7 +88,7 @@ NC_Ozone$Date <- as.Date(NC_Ozone$Date, format = "%m/%d/%Y")
 
 ```
 
-```{r EPA air quality dataset wrangling into three df's}
+```{r EPA air quality dataset wrangling into three dfs}
 
 PM25_clean <- NC_PM25 %>% select(Date, Site.ID, Daily.Mean.PM2.5.Concentration)
 
@@ -107,7 +107,7 @@ NO2_and_SO2 <- merge(NC_SO2, NO2_clean, by=c("Site.ID","Date"))
 unique(NO2_and_SO2[c("Site.Name")])
 ```
 
-```{r Convert EPA air quality dataframes to sf's}
+```{r Convert EPA air quality dataframes to sfs}
 PM.sf <- PM_combined %>% 
   st_as_sf(coords = c('SITE_LONGITUDE','SITE_LATITUDE'),
            crs=4269)
