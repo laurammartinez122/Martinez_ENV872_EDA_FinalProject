@@ -24,16 +24,20 @@ When you click the **Knit** button a document will be generated that includes bo
 setwd("/Users/laura/Documents/Martinez_ENV872_EDA_FinalProject")
 getwd()
 
-#install.packages(tidyverse)
+#install.packages("tidyverse")
 library(tidyverse)
-#install.packages(sf)
+#install.packages("sf")
 library(sf)
-#install.packages(mapview)
+#install.packages("mapview")
 library(mapview)
-#install.packages(dplyr)
+#install.packages("dplyr")
 library(dplyr)
-#install.packages(viridis)
+#install.packages("viridis")
 library(viridis)
+#install.packages("ggplot2")
+library(ggplot2)
+#install.packages("RColorBrewer")
+library(RColorBrewer)
 
 mytheme <- theme_classic() +
   theme(axis.text = element_text(color = "black"), 
@@ -45,7 +49,11 @@ theme_set(mytheme)
 ```{r import data sets}
 Haz_Waste_Sites <- read.csv("./Data/Hazardous_Waste_Sites.csv",
                          stringsAsFactors = TRUE)
+
 NC_Counties <- st_read('./Data/NC_Counties/counties.shp')
+
+#Read in file outside of code
+EJSCREEN_shp <- st_read('./Data/EJSCREEN_Full_shapefile/EJSCREEN_Full_with_AS_CNMI_GU_VI_Tracts.shp')
 
 ```
 
@@ -74,8 +82,33 @@ ggplot()+
 
 ```
 
-```{r }
+```{r EJSCREEN shapefile wrangling}
+EJScreen_NC_shp <-
+  EJSCREEN_shp %>%
+  filter(STATE_NAME == 'North Carolina') %>%
+  select(ID:CNTY_NAME, MINORPCT, LOWINCPCT, UNDER5PCT, OVER64PCT, PTSDF) %>%
+  group_by(CNTY_NAME) %>%
+  summarise(mean_MINORPCT = mean(MINORPCT), 
+            mean_LOWINCPCT = mean(LOWINCPCT), 
+            mean_UNDER5PCT = mean(UNDER5PCT), 
+            mean_OVER64PCT = mean(OVER64PCT),
+            mean_PTSDF = mean(PTSDF))
 
+```
+
+```{r EJScreen plot shapefile}
+Demographic1.plot <-
+  ggplot() +
+  geom_sf(data = EJScreen_NC_shp, aes(fill=mean_OVER64PCT)) + 
+  geom_sf(data = HWS.sf, fill ='azure', cex = 1.5, alpha = 0.75) +
+  scale_color_viridis(option= "magma", direction = -1)
+print(Demographic1.plot)
+
+Demographic1.plot <- 
+  geom_sf(data = EJScreen_NC_shp, aes(fill=mean_OVER64PCT)) + 
+  scale_color_viridis(option= "magma", direction = -1) +
+  geom_sf(data = HWS.sf, fill ='azure', cex = 1.5, alpha = 0.75) 
+Demographic1.plot
 ```
 
 ```{r data wrangling}
